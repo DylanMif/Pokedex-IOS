@@ -19,9 +19,6 @@ class PokemonDetailsViewModel: ObservableObject {
     @Published var isFavorite: Bool = false
     @Published var isLoading = false
     @Published var errorMessage: IdentifiableError?
-    
-    
-    
         
     func loadPokemonDetails(id: Int) {
         isLoading = true

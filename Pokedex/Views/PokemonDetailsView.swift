@@ -103,7 +103,7 @@ struct PokemonHeaderView: View {
             .padding(.bottom, 16)
             
             // Pokemon image
-            if let imageUrl = pokemon.sprites?.frontDefault,
+            if let imageUrl = pokemon.sprites?.front_default,
                let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -271,14 +271,6 @@ struct FormCard: View {
                 }
                 
                 Spacer()
-            }
-            
-            // Alternative sprites if available
-            if let shinyUrl = form.sprites?.front_shiny,
-               URL(string: shinyUrl) != nil {
-                Text("Alternative Forms Available")
-                    .font(.caption)
-                    .foregroundColor(.gray)
             }
         }
         .padding()
