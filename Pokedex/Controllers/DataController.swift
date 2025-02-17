@@ -8,13 +8,25 @@
 import CoreData
 
 class DataController: ObservableObject {
-    let container = NSPersistentContainer(name: "Pokedex")
-    
-    init() {
-        container.loadPersistentStores { description, error in
-            if let error = error {
-                print("Core Data failed to load: \(error.localizedDescription)")
+    static let shared = DataController()
+
+    let container: NSPersistentContainer
+
+    init(inMemory: Bool = false) {
+        container = NSPersistentContainer(name: "Pokedex")
+        
+        if inMemory {
+            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
+        }
+        
+        container.loadPersistentStores { storeDescription, error in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         }
+    }
+    
+    var context: NSManagedObjectContext {
+        container.viewContext
     }
 }

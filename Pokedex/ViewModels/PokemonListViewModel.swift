@@ -14,6 +14,24 @@ class PokemonListViewModel : ObservableObject {
     
     private var currentOffset = 0
     private var canLoadMore = true
+    private let context = DataController.shared.context
+    private let pokemonService = PokemonService()
+    private let repository = PokemonRepository()
+    
+//    func loadPokemons() {
+//            isLoading = true
+//            PokemonService.shared.fetchPokemonList { result in
+//                DispatchQueue.main.async {
+//                    self.isLoading = false
+//                    switch result {
+//                    case .success(let pokemons):
+//                        self.pokemons = pokemons
+//                    case .failure(let error):
+//                        self.errorMessage = IdentifiableError(message: error.localizedDescription)
+//                    }
+//                }
+//            }
+//        }
     
     func loadPokemons() {
             guard !isLoading && canLoadMore else { return }
@@ -32,7 +50,27 @@ class PokemonListViewModel : ObservableObject {
                     case .failure(let error):
                         self.errorMessage = IdentifiableError(message: error.localizedDescription)
                     }
+        Task {
+            do {
+                let cachedPokemons = try repository.fetchPokemonsFromCoreData()
+                
+                if cachedPokemons.isEmpty {
+                    // Pas de pokemons en cache => on va à l’API
+                    let fetched = try await pokemonService.fetchPokemons(limit: 50)
+                    // On sauvegarde en base
+                    try repository.savePokemons(fetched)
+                    // On recharge le cache
+                    let newCached = try repository.fetchPokemonsFromCoreData()
+                    // On met à jour la variable
+                    self.pokemons = newCached.map { Pokemon(name: $0.name ?? "", url: $0.url ?? "") }
+                } else {
+                    // On a déjà un cache => on le charge en mémoire
+                    self.pokemons = cachedPokemons.map { Pokemon(name: $0.name ?? "", url: $0.url ?? "") }
+                    // On peut décider de rafraîchir en background si nécessaire
+                    // refreshInBackground()
                 }
+            } catch {
+                print("Erreur : \(error.localizedDescription)")
             }
         }
     
