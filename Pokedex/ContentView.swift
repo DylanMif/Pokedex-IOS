@@ -15,7 +15,7 @@ struct ContentView: View {
     
     var body: some View {
             NavigationView {
-                List(pokemons) { pokemon in
+                List(pokemons) { (pokemon) in
                     Text(pokemon.name.capitalized)
                 }
                 .navigationBarTitle("Pokédex")
@@ -56,5 +56,5 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }

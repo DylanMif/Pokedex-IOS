@@ -8,16 +8,22 @@
 import Foundation
 
 struct Pokemon: Identifiable, Decodable {
-    var id: Int
+    var id: Int {
+            if let idStr = url.split(separator: "/").last,
+               let id = Int(idStr) {
+                return id
+            }
+            return 0
+        }
     var name: String
-    var image: String
-    var type: String
-    var pv: Int
-    var attack: Int
-    var defense: Int
-    var specialAttack: Int
-    var specialDefense: Int
-    var speed: Int
+    var url: String
+    //var type: String
+    //var pv: Int
+    //var attack: Int
+    //var defense: Int
+    //var specialAttack: Int
+    //var specialDefense: Int
+    //var speed: Int
 }
 
 struct PokemonListResponse: Decodable {
