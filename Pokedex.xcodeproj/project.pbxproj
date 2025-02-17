@@ -23,6 +23,7 @@
 		A8BC32932D632B9200F68F5B /* PokemonStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC32922D632B9200F68F5B /* PokemonStruct.swift */; };
 		A8BC32972D632DB600F68F5B /* PokemonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC32962D632DB600F68F5B /* PokemonService.swift */; };
 		A8BC32992D632DE900F68F5B /* IdentifiableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC32982D632DE900F68F5B /* IdentifiableError.swift */; };
+		A8BC329B2D63386F00F68F5B /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC329A2D63386F00F68F5B /* AsyncImageView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		A8BC32922D632B9200F68F5B /* PokemonStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonStruct.swift; sourceTree = "<group>"; };
 		A8BC32962D632DB600F68F5B /* PokemonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonService.swift; sourceTree = "<group>"; };
 		A8BC32982D632DE900F68F5B /* IdentifiableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifiableError.swift; sourceTree = "<group>"; };
+		A8BC329A2D63386F00F68F5B /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 			children = (
 				298214432D63351C0078DAD7 /* PokemonDetailsView.swift */,
 				298214442D63351C0078DAD7 /* PokemonListView.swift */,
+				A8BC329A2D63386F00F68F5B /* AsyncImageView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -229,6 +232,8 @@
 				A8BC32762D63206500F68F5B /* PokedexApp.swift in Sources */,
 				298214492D6335240078DAD7 /* PokemonListViewModel.swift in Sources */,
 				298214452D63351C0078DAD7 /* PokemonDetailsView.swift in Sources */,
+				627A64AC2D6328C200CD81F5 /* PokemonEntity.xcdatamodeld in Sources */,
+				A8BC329B2D63386F00F68F5B /* AsyncImageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

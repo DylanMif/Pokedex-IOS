@@ -15,41 +15,8 @@ struct ContentView: View {
     
     var body: some View {
             NavigationView {
-                List(pokemons) { (pokemon) in
-                    Text(pokemon.name.capitalized)
-                }
+                PokemonListView()
                 .navigationBarTitle("Pokédex")
-                .onAppear {
-                    loadPokemons()
-                }
-                .overlay(
-                    Group {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(2)
-                        }
-                    }
-                )
-                // Ajout d'un type explicite pour la variable 'error' ici
-                .alert(item: $errorMessage) { (error: IdentifiableError) in
-                    Alert(title: Text("Erreur"), message: Text(error.message), dismissButton: .default(Text("OK")))
-                }
-            }
-        }
-    
-    private func loadPokemons() {
-            isLoading = true
-            PokemonService.shared.fetchPokemonList { result in
-                DispatchQueue.main.async {
-                    isLoading = false
-                    switch result {
-                    case .success(let pokemons):
-                        self.pokemons = pokemons
-                    case .failure(let error):
-                        self.errorMessage = IdentifiableError(message: error.localizedDescription)
-                    }
-                }
             }
         }
 }
