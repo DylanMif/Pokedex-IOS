@@ -20,15 +20,11 @@ struct Pokemon: Identifiable, Decodable {
     var imageUrl: String {
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png"
         }
-    //var type: String
-    //var pv: Int
-    //var attack: Int
-    //var defense: Int
-    //var specialAttack: Int
-    //var specialDefense: Int
-    //var speed: Int
 }
 
 struct PokemonListResponse: Decodable {
+    let count: Int
+    let next: String?
+    let previous: String?
     let results: [Pokemon]
 }

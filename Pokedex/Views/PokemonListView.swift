@@ -17,6 +17,8 @@ struct PokemonListView: View {
                                         AsyncImageView(url: pokemon.imageUrl)
                                             .frame(width: 50, height: 50)
                                         Text(pokemon.name.capitalized)
+                                    }.onAppear {
+                                        viewModel.loadMoreIfNeeded(pokemon: pokemon)
                                     }
                 }
                 .navigationBarTitle("Pokédex")
@@ -25,12 +27,16 @@ struct PokemonListView: View {
                 }
                 .overlay(
                     Group {
-                        if self.viewModel.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(2)
-                        }
-                    }
+                                        if viewModel.isLoading {
+                                            VStack {
+                                                Spacer()
+                                                ProgressView()
+                                                    .progressViewStyle(CircularProgressViewStyle())
+                                                    .scaleEffect(1.5)
+                                                Spacer().frame(height: 20)
+                                            }
+                                        }
+                                    }
                 )
                 
                 .alert(item: $viewModel.errorMessage) { (error: IdentifiableError) in

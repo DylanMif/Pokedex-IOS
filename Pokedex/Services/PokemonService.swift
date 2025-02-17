@@ -13,8 +13,8 @@ class PokemonService {
     private let baseUrl = "https://pokeapi.co/api/v2/pokemon"
     
     // Fonction pour récupérer les Pokémon
-    func fetchPokemonList(completion: @escaping (Result<[Pokemon], Error>) -> Void) {
-        guard let url = URL(string: "\(baseUrl)?limit=50") else { return }
+    func fetchPokemonList(offset: Int, limit: Int = 20, completion: @escaping (Result<PokemonListResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseUrl)?offset=\(offset)&limit=\(limit)") else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
@@ -26,7 +26,7 @@ class PokemonService {
             
             do {
                 let decodedResponse = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-                completion(.success(decodedResponse.results))
+                completion(.success(decodedResponse))
             } catch {
                 completion(.failure(error))
             }
