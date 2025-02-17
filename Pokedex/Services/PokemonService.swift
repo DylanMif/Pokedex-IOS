@@ -33,25 +33,26 @@ class PokemonService {
     //        }.resume()
     //    }
     
-    func fetchPokemons(limit: Int = 50) async throws -> [Pokemon] {
-        // 1. Construire l’URL
-        guard let url = URL(string: "https://pokeapi.co/api/v2/pokemon?limit=\(limit)") else {
-            throw URLError(.badURL)
-        }
-        
-        // 2. Récupérer les données depuis l’API (async/await)
-        let (data, _) = try await URLSession.shared.data(from: url)
-        
-        // 3. Décoder la réponse JSON
-        let decodedResponse = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-        
-        // 4. Convertir en [Pokemon] :
-        //    On veut extraire un 'id' depuis l’URL du Pokémon : "https://pokeapi.co/api/v2/pokemon/25/"
-        let pokemons: [Pokemon] = decodedResponse.results.map { item in
-            return Pokemon(name: item.name, url: item.url)
-        }
-        
-        return pokemons
+//    func fetchPokemons(limit: Int = 50) async throws -> [Pokemon] {
+//        // 1. Construire l’URL
+//        guard let url = URL(string: "https://pokeapi.co/api/v2/pokemon?limit=\(limit)") else {
+//            throw URLError(.badURL)
+//        }
+//        
+//        // 2. Récupérer les données depuis l’API (async/await)
+//        let (data, _) = try await URLSession.shared.data(from: url)
+//        
+//        // 3. Décoder la réponse JSON
+//        let decodedResponse = try JSONDecoder().decode(PokemonListResponse.self, from: data)
+//        
+//        // 4. Convertir en [Pokemon] :
+//        //    On veut extraire un 'id' depuis l’URL du Pokémon : "https://pokeapi.co/api/v2/pokemon/25/"
+//        let pokemons: [Pokemon] = decodedResponse.results.map { item in
+//            return Pokemon(name: item.name, url: item.url)
+//        }
+//        
+//        return pokemons
+//    }
     func fetchPokemonList(offset: Int, limit: Int = 20, completion: @escaping (Result<PokemonListResponse, Error>) -> Void) {
         guard let url = URL(string: "\(baseUrl)?offset=\(offset)&limit=\(limit)") else { return }
         
