@@ -51,42 +51,46 @@ struct PokemonListView: View {
         }
     
     private var searchResultsList: some View {
-            List(viewModel.searchResults) { pokemon in
+        List(viewModel.searchResults) { pokemon in
+            NavigationLink(destination: PokemonDetailsView(pokemonId: pokemon.id)) {
                 HStack {
+                    Text("#\(pokemon.id)")
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                     Text(pokemon.name.capitalized)
-                    Text("#\(pokemon.id)")
                 }
             }
         }
+    }
     
     private var normalList: some View {
-            List(viewModel.pokemons) { pokemon in
+        List(viewModel.pokemons) { pokemon in
+            NavigationLink(destination: PokemonDetailsView(pokemonId: pokemon.id)) {
                 HStack {
+                    Text("#\(pokemon.id)")
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                     Text(pokemon.name.capitalized)
-                    Text("#\(pokemon.id)")
-                }
-                .onAppear {
-                    viewModel.loadMoreIfNeeded(pokemon: pokemon)
                 }
             }
-            .overlay(
-                Group {
-                    if viewModel.isLoading {
-                        VStack {
-                            Spacer()
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(1.5)
-                            Spacer().frame(height: 20)
-                        }
+            .onAppear {
+                viewModel.loadMoreIfNeeded(pokemon: pokemon)
+            }
+        }
+        .overlay(
+            Group {
+                if viewModel.isLoading {
+                    VStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(1.5)
+                        Spacer().frame(height: 20)
                     }
                 }
-            )
-        }
+            }
+        )
+    }
 }
 
 #Preview {
