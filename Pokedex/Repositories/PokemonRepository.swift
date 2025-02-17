@@ -12,17 +12,19 @@ class PokemonRepository {
     
     func fetchPokemonsFromCoreData() throws -> [PokemonEntity] {
         let request: NSFetchRequest<PokemonEntity> = PokemonEntity.fetchRequest()
+        let sortByID = NSSortDescriptor(key: "id", ascending: true)
+        request.sortDescriptors = [sortByID]
         return try context.fetch(request)
     }
     
     func savePokemons(_ pokemons: [Pokemon]) throws {
         for pokemon in pokemons {
             let entity = PokemonEntity(context: context)
+            entity.id = Int64(pokemon.id)
             entity.name = pokemon.name
             entity.url = pokemon.url
         }
         try context.save()
     }
     
-    // Et d’autres méthodes utilitaires si besoin
 }
