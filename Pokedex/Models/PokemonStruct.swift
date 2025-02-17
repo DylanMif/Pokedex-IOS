@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Pokemon {
+struct Pokemon: Identifiable, Decodable {
+    var id: Int
     var name: String
     var image: String
     var type: String
@@ -15,6 +16,10 @@ struct Pokemon {
     var attack: Int
     var defense: Int
     var specialAttack: Int
-    var spcecialDefense: Int
+    var specialDefense: Int
     var speed: Int
+}
+
+struct PokemonListResponse: Decodable {
+    let results: [Pokemon]
 }
