@@ -19,3 +19,7 @@ struct Pokemon: Identifiable, Decodable {
     var specialDefense: Int
     var speed: Int
 }
+
+struct PokemonListResponse: Decodable {
+    let results: [Pokemon]
+}
