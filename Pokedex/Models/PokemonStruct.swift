@@ -17,6 +17,9 @@ struct Pokemon: Identifiable, Decodable {
         }
     var name: String
     var url: String
+    var imageUrl: String {
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png"
+        }
     //var type: String
     //var pv: Int
     //var attack: Int
