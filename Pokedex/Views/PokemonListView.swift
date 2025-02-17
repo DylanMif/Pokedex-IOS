@@ -14,6 +14,7 @@ struct PokemonListView: View {
         NavigationView {
             List(self.viewModel.pokemons) { (pokemon) in
                 HStack {
+                    Text("#\(pokemon.id)")
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                     Text(pokemon.name.capitalized)

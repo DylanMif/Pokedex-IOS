@@ -32,6 +32,7 @@ class PokemonListViewModel : ObservableObject {
                         self.pokemons = cachedPokemons.map {
                             Pokemon(name: $0.name ?? "", url: $0.url ?? "")
                         }
+                        self.currentOffset = self.pokemons.count
                         // Optionnel : rafraîchir en arrière-plan
                         // refreshInBackground()
                     }
