@@ -13,6 +13,7 @@
 		A8BC327D2D63206700F68F5B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A8BC327C2D63206700F68F5B /* Preview Assets.xcassets */; };
 		A8BC327F2D63206700F68F5B /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC327E2D63206700F68F5B /* Persistence.swift */; };
 		A8BC32822D63206700F68F5B /* Pokedex.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A8BC32802D63206700F68F5B /* Pokedex.xcdatamodeld */; };
+		A8BC32892D63218300F68F5B /* PokemonStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BC32882D63218300F68F5B /* PokemonStruct.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		A8BC327C2D63206700F68F5B /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A8BC327E2D63206700F68F5B /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A8BC32812D63206700F68F5B /* Pokedex.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Pokedex.xcdatamodel; sourceTree = "<group>"; };
+		A8BC32882D63218300F68F5B /* PokemonStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonStruct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 				A8BC327E2D63206700F68F5B /* Persistence.swift */,
 				A8BC32802D63206700F68F5B /* Pokedex.xcdatamodeld */,
 				A8BC327B2D63206700F68F5B /* Preview Content */,
+				A8BC32882D63218300F68F5B /* PokemonStruct.swift */,
 			);
 			path = Pokedex;
 			sourceTree = "<group>";
@@ -147,6 +150,7 @@
 				A8BC327F2D63206700F68F5B /* Persistence.swift in Sources */,
 				A8BC32782D63206500F68F5B /* ContentView.swift in Sources */,
 				A8BC32762D63206500F68F5B /* PokedexApp.swift in Sources */,
+				A8BC32892D63218300F68F5B /* PokemonStruct.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
