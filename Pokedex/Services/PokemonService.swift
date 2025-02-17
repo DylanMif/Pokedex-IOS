@@ -30,6 +30,13 @@ class PokemonService {
             return
         }
         
+        let baseUrl = "https://pokeapi.co/api/v2/pokemon"
+        
+    }
+    
+    func fetchPokemonList(offset: Int, limit: Int = 20, completion: @escaping (Result<PokemonListResponse, Error>) -> Void) {
+        guard let url = URL(string: "\(baseUrl)?offset=\(offset)&limit=\(limit)") else { return }
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
@@ -72,6 +79,7 @@ class PokemonService {
             }
         }.resume()
     }
+    
     
     func searchPokemon(query: String) async throws -> [Pokemon] {
         // L'API Pokemon ne supporte pas directement la recherche,
