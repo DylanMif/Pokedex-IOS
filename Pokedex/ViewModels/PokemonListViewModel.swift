@@ -11,6 +11,11 @@ class PokemonListViewModel : ObservableObject {
     @Published var pokemons: [Pokemon] = []
     @Published var isLoading = false
     @Published var errorMessage: IdentifiableError?
+    @Published var searchText = ""
+    @Published var isSearching = false
+    @Published var searchResults: [Pokemon] = []
+    
+    private var searchTask: Task<Void, Never>?
     
     private var currentOffset = 0
     private var canLoadMore = true
@@ -83,6 +88,34 @@ class PokemonListViewModel : ObservableObject {
             loadPokemonsFromApi()
         }
     }
+    
+    func performSearch() {
+            // Annuler la recherche précédente si elle existe
+            searchTask?.cancel()
+            
+            guard !searchText.isEmpty else {
+                searchResults = []
+                isSearching = false
+                return
+            }
+            
+            isSearching = true
+            
+            searchTask = Task {
+                do {
+                    let results = try await PokemonService.shared.searchPokemon(query: searchText)
+                    await MainActor.run {
+                        self.searchResults = results
+                        self.isLoading = false
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.errorMessage = IdentifiableError(message: error.localizedDescription)
+                        self.isLoading = false
+                    }
+                }
+            }
+        }
     
     
 }

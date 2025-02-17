@@ -11,20 +11,67 @@ struct PokemonListView: View {
     @StateObject private var viewModel = PokemonListViewModel()
     
     var body: some View {
-        NavigationView {
-            List(self.viewModel.pokemons) { (pokemon) in
+            NavigationView {
+                VStack {
+                    searchBar
+                    
+                    if viewModel.isSearching {
+                        searchResultsList
+                    } else {
+                        normalList
+                    }
+                }.onAppear {
+                    self.viewModel.loadInitialData()
+                }
+                .navigationBarTitle("Pokédex")
+            }
+        }
+    
+    private var searchBar: some View {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                
+                TextField("Rechercher un Pokémon", text: $viewModel.searchText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onChange(of: viewModel.searchText) { _ in
+                        viewModel.performSearch()
+                    }
+                
+                if !viewModel.searchText.isEmpty {
+                    Button(action: {
+                        viewModel.searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            .padding()
+        }
+    
+    private var searchResultsList: some View {
+            List(viewModel.searchResults) { pokemon in
                 HStack {
-                    Text("#\(pokemon.id)")
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                     Text(pokemon.name.capitalized)
-                }.onAppear {
-                    self.viewModel.loadMoreIfNeeded(pokemon: pokemon)
+                    Text("#\(pokemon.id)")
                 }
             }
-            .navigationBarTitle("Pokédex")
-            .onAppear {
-                self.viewModel.loadInitialData()
+        }
+    
+    private var normalList: some View {
+            List(viewModel.pokemons) { pokemon in
+                HStack {
+                    AsyncImageView(url: pokemon.imageUrl)
+                        .frame(width: 50, height: 50)
+                    Text(pokemon.name.capitalized)
+                    Text("#\(pokemon.id)")
+                }
+                .onAppear {
+                    viewModel.loadMoreIfNeeded(pokemon: pokemon)
+                }
             }
             .overlay(
                 Group {
@@ -39,12 +86,7 @@ struct PokemonListView: View {
                     }
                 }
             )
-            
-            .alert(item: $viewModel.errorMessage) { (error: IdentifiableError) in
-                Alert(title: Text("Erreur"), message: Text(error.message), dismissButton: .default(Text("OK")))
-            }
         }
-    }
 }
 
 #Preview {
