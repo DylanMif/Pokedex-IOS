@@ -12,31 +12,80 @@ struct PokemonListView: View {
     
     var body: some View {
             NavigationView {
-                List(self.viewModel.pokemons) { (pokemon) in
-                    HStack {
-                                        AsyncImageView(url: pokemon.imageUrl)
-                                            .frame(width: 50, height: 50)
-                                        Text(pokemon.name.capitalized)
-                                    }
+                VStack {
+                    searchBar
+                    
+                    if viewModel.isSearching {
+                        searchResultsList
+                    } else {
+                        normalList
+                    }
+                }.onAppear {
+                    self.viewModel.loadInitialData()
                 }
                 .navigationBarTitle("Pokédex")
-                .onAppear {
-                    self.viewModel.loadPokemons()
-                }
-                .overlay(
-                    Group {
-                        if self.viewModel.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(2)
-                        }
-                    }
-                )
+            }
+        }
+    
+    private var searchBar: some View {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
                 
-                .alert(item: $viewModel.errorMessage) { (error: IdentifiableError) in
-                    Alert(title: Text("Erreur"), message: Text(error.message), dismissButton: .default(Text("OK")))
+                TextField("Rechercher un Pokémon", text: $viewModel.searchText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onChange(of: viewModel.searchText) { _ in
+                        viewModel.performSearch()
+                    }
+                
+                if !viewModel.searchText.isEmpty {
+                    Button(action: {
+                        viewModel.searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
                 }
             }
+            .padding()
+        }
+    
+    private var searchResultsList: some View {
+            List(viewModel.searchResults) { pokemon in
+                HStack {
+                    AsyncImageView(url: pokemon.imageUrl)
+                        .frame(width: 50, height: 50)
+                    Text(pokemon.name.capitalized)
+                    Text("#\(pokemon.id)")
+                }
+            }
+        }
+    
+    private var normalList: some View {
+            List(viewModel.pokemons) { pokemon in
+                HStack {
+                    AsyncImageView(url: pokemon.imageUrl)
+                        .frame(width: 50, height: 50)
+                    Text(pokemon.name.capitalized)
+                    Text("#\(pokemon.id)")
+                }
+                .onAppear {
+                    viewModel.loadMoreIfNeeded(pokemon: pokemon)
+                }
+            }
+            .overlay(
+                Group {
+                    if viewModel.isLoading {
+                        VStack {
+                            Spacer()
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(1.5)
+                            Spacer().frame(height: 20)
+                        }
+                    }
+                }
+            )
         }
 }
 
