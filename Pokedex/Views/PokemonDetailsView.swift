@@ -12,8 +12,11 @@ struct PokemonDetailsView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab = "Forms"
+    
     let pokemonId: Int
     let namespace: Namespace.ID
+    
+    @State private var battleResult: String? = nil
     
     var body: some View {
         ScrollView {
@@ -98,6 +101,27 @@ struct PokemonDetailsView: View {
                     default:
                         EmptyView()
                     }
+                    // Battle Button
+                    Button(action: {
+                        startBattle(pokemon: pokemon)
+                    }) {
+                        Text("Start Battle")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .padding(.top, 16)
+                    
+                    // Battle Result
+                    if let result = battleResult {
+                        Text(result)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .padding()
+                            .transition(.opacity)
+                    }
                 }
             }
         }
@@ -116,11 +140,41 @@ struct PokemonDetailsView: View {
             }
         }
         
-                .navigationBarBackButtonHidden(true)
-                .edgesIgnoringSafeArea(.top)
-                .onAppear {
-                    viewModel.loadPokemonDetails(id: pokemonId)
+        .navigationBarBackButtonHidden(true)
+        .edgesIgnoringSafeArea(.top)
+        .onAppear {
+            viewModel.loadPokemonDetails(id: pokemonId)
+        }
+    }
+    
+    // Simple Battle Simulation
+    private func startBattle(pokemon: PokemonDetail) {
+        guard let playerStats = pokemon.stats else { return }
+        
+        // Random opponent (for simplicity, generate a pseudo-random Pokémon)
+        let opponentId = Int.random(in: 1...151) // Limit to first 151 for demo
+        viewModel.loadPokemonDetails(id: opponentId) { opponent in
+            guard let opponent = opponent, let opponentStats = opponent.stats else { return }
+            
+            // Simple battle logic: Compare attack vs defense
+            let playerAttack = playerStats.first { $0.stat?.name == "attack" }?.base_stat ?? 0
+            let playerDefense = playerStats.first { $0.stat?.name == "defense" }?.base_stat ?? 0
+            let opponentAttack = opponentStats.first { $0.stat?.name == "attack" }?.base_stat ?? 0
+            let opponentDefense = opponentStats.first { $0.stat?.name == "defense" }?.base_stat ?? 0
+            
+            let playerScore = playerAttack + playerDefense
+            let opponentScore = opponentAttack + opponentDefense
+            
+            withAnimation {
+                if playerScore > opponentScore {
+                    battleResult = "\(pokemon.name?.capitalized ?? "Your Pokémon") defeated \(opponent.name?.capitalized ?? "Opponent")!"
+                } else if playerScore < opponentScore {
+                    battleResult = "\(opponent.name?.capitalized ?? "Opponent") defeated \(pokemon.name?.capitalized ?? "Your Pokémon")!"
+                } else {
+                    battleResult = "It’s a tie between \(pokemon.name?.capitalized ?? "Your Pokémon") and \(opponent.name?.capitalized ?? "Opponent")!"
                 }
+            }
+        }
     }
     
     private func getTypeColors(for pokemon: PokemonDetail) -> [Color] {
@@ -135,8 +189,8 @@ struct PokemonDetailsView: View {
         return colors.count == 1 ? [colors[0], colors[0].opacity(0.7)] : colors
     }
 }
-    
-    
+
+
 // Pokemon bounce animation modifier
 struct PokemonBounceAnimation: ViewModifier {
     @State private var isAnimating = false

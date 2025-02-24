@@ -15,6 +15,8 @@ struct PokemonListView: View {
     @State private var selectedTypeFilter: String? = nil
     @State private var sortOption: SortOption = .name
     
+    @State private var zoomedPokemonId: Int? = nil
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -119,7 +121,16 @@ struct PokemonListView: View {
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                         .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id)", in: namespace)
+                        .scaleEffect(zoomedPokemonId == pokemon.id ? 1.2 : 1.0)
                     Text(pokemon.name.capitalized)
+                }
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        zoomedPokemonId = pokemon.id
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            zoomedPokemonId = nil
+                        }
+                    }
                 }
             }
             .transition(.slide)
@@ -137,7 +148,16 @@ struct PokemonListView: View {
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                         .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id)", in: namespace)
+                        .scaleEffect(zoomedPokemonId == pokemon.id ? 1.2 : 1.0)
                     Text(pokemon.name.capitalized)
+                }
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        zoomedPokemonId = pokemon.id // Trigger zoom
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            zoomedPokemonId = nil // Reset after a short delay
+                        }
+                    }
                 }
             }
             .transition(.slide)
@@ -176,16 +196,16 @@ struct PokemonListView: View {
         
         if let type = selectedTypeFilter {
             
-                print("Filtrage par type: \(type)")
+            print("Filtrage par type: \(type)")
             
-                filteredPokemons = filteredPokemons.filter { pokemon in
-                    let hasType = pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
-                    
-                    print("Pokemon: \(pokemon.name), Types: \(String(describing: pokemon.types)), Résultat: \(hasType)")
-                    
-                    return hasType
-                }
+            filteredPokemons = filteredPokemons.filter { pokemon in
+                let hasType = pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
+                
+                print("Pokemon: \(pokemon.name), Types: \(String(describing: pokemon.types)), Résultat: \(hasType)")
+                
+                return hasType
             }
+        }
         
         return applySorting(to: filteredPokemons)
     }
