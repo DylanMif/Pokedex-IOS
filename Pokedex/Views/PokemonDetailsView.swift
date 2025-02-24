@@ -11,6 +11,7 @@ struct PokemonDetailsView: View {
     @StateObject private var viewModel = PokemonDetailsViewModel()
     @State private var selectedTab = "Forms"
     let pokemonId: Int
+    let namespace: Namespace.ID
     
     var body: some View {
         ScrollView {
@@ -19,7 +20,8 @@ struct PokemonDetailsView: View {
                     PokemonHeaderView(
                         pokemon: pokemon,
                         isFavorite: viewModel.isFavorite,
-                        onFavoriteToggle: viewModel.toggleFavorite
+                        onFavoriteToggle: viewModel.toggleFavorite,
+                        namespace: namespace
                     )
                     
                     // Tab selector
@@ -63,6 +65,7 @@ struct PokemonHeaderView: View {
     let pokemon: PokemonDetail
     let isFavorite: Bool
     let onFavoriteToggle: () -> Void
+    let namespace: Namespace.ID
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -113,6 +116,7 @@ struct PokemonHeaderView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id ?? 0)", in: namespace)
                     case .failure(_):
                         Image(systemName: "photo") // Fallback image
                     @unknown default:
@@ -446,6 +450,8 @@ struct StatRowView: View {
     }
 }
 
-#Preview {
-    PokemonDetailsView(pokemonId: 666)
-}
+//#Preview {
+//    PokemonDetailsView(
+//        pokemonId: 666,
+//    )
+//}

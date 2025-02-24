@@ -7,20 +7,24 @@
 
 import Foundation
 
-struct Pokemon: Identifiable, Decodable {
+struct Pokemon: Identifiable, Decodable, Equatable {
     var id: Int {
-            if let idStr = url.split(separator: "/").last,
-               let id = Int(idStr) {
-                return id
-            }
-            return 0
+        if let idStr = url.split(separator: "/").last,
+           let id = Int(idStr) {
+            return id
         }
+        return 0
+    }
     var name: String
     var url: String
     var imageUrl: String {
-            "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png"
-        }
+        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png"
+    }
     var types: [PokemonType]?
+    
+    static func == (lhs: Pokemon, rhs: Pokemon) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 struct PokemonListResponse: Decodable {
