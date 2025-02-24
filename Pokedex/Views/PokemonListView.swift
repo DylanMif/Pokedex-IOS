@@ -29,7 +29,16 @@ struct PokemonListView: View {
                         .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 2)
                         .padding(.top, 20)
                     
-                    // Picker pour le filtre par type
+                    Text("A beautiful Pokédex app by Lan, NicoNii, Wei")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                    
+                    Text("Filter pokemons by type")
+                        .font(.custom("Pokemon Solid", size: 16))
+                        .foregroundColor(.white)
+                        .padding(.top, 10)
+                    
+                    // Picker for filter
                     Picker("Filter by Type", selection: $selectedTypeFilter) {
                         Text("All").tag(nil as String?)
                         Text("Water").tag("Water" as String?)
@@ -42,7 +51,11 @@ struct PokemonListView: View {
                     .background(Color.pokeRed.opacity(0.8))
                     .cornerRadius(10)
                     
-                    // Picker pour le tri
+                    Text("Sort pokemons by Name or ID")
+                        .font(.custom("Pokemon Solid", size: 16))
+                        .foregroundColor(.white)
+                    
+                    // Picker for sort
                     Picker("Sort By", selection: $sortOption) {
                         Text("Name").tag(SortOption.name)
                         Text("ID").tag(SortOption.id)
@@ -74,7 +87,7 @@ struct PokemonListView: View {
     private var searchBar: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundColor(.black)
             
             TextField("Rechercher un Pokémon", text: $viewModel.searchText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -108,7 +121,7 @@ struct PokemonListView: View {
     }
     
     private var normalList: some View {
-        List(viewModel.pokemons) { pokemon in
+        List(filteredAndSortedPokemons) { pokemon in
             NavigationLink(destination: PokemonDetailsView(pokemonId: pokemon.id)) {
                 HStack {
                     Text("#\(pokemon.id)")
@@ -143,18 +156,26 @@ struct PokemonListView: View {
         case id
     }
     
+    // Filter and sort pokemons
+    
     private var filteredAndSortedPokemons: [Pokemon] {
         var filteredPokemons = viewModel.pokemons
         
         if let type = selectedTypeFilter {
-            filteredPokemons = filteredPokemons.filter { pokemon in
-                pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
+            
+                print("Filtrage par type: \(type)")
+            
+                filteredPokemons = filteredPokemons.filter { pokemon in
+                    let hasType = pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
+                    
+                    print("Pokemon: \(pokemon.name), Types: \(String(describing: pokemon.types)), Résultat: \(hasType)")
+                    
+                    return hasType
+                }
             }
-        }
         
         return applySorting(to: filteredPokemons)
     }
-    
     
     private func applySorting(to pokemons: [Pokemon]) -> [Pokemon] {
         switch sortOption {

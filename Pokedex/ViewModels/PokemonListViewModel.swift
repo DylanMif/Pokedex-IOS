@@ -38,6 +38,9 @@ class PokemonListViewModel : ObservableObject {
                             Pokemon(name: $0.name ?? "", url: $0.url ?? "")
                         }
                         self.currentOffset = self.pokemons.count
+                        
+                        loadPokemonTypes()
+                        
                         // Optionnel : rafraîchir en arrière-plan
                         // refreshInBackground()
                     }
@@ -81,6 +84,30 @@ class PokemonListViewModel : ObservableObject {
         }
     }
     
+    private func loadPokemonTypes() {
+        print("Début du chargement des types pour \(pokemons.count) Pokémon")
+        for (index, pokemon) in pokemons.enumerated() {
+            PokemonService.shared.fetchPokemonDetails(id: pokemon.id) { [weak self] result in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let detail):
+                        if let types = detail.types {
+                            print("Types chargés pour \(pokemon.name): \(types.map { $0.type?.name ?? "unknown" })")
+                            var updatedPokemon = pokemon
+                            updatedPokemon.types = types
+                            self.pokemons[index] = updatedPokemon // Remplacer l’élément entier
+                        } else {
+                            print("Aucun type trouvé pour \(pokemon.name)")
+                        }
+                    case .failure(let error):
+                        print("Erreur lors du chargement des types pour \(pokemon.name): \(error)")
+                    }
+                }
+            }
+        }
+    }
+    
     func loadMoreIfNeeded(pokemon: Pokemon) {
         guard let index = pokemons.firstIndex(where: { $0.id == pokemon.id }) else { return }
         let thresholdIndex = pokemons.index(pokemons.endIndex, offsetBy: -5)
@@ -90,32 +117,32 @@ class PokemonListViewModel : ObservableObject {
     }
     
     func performSearch() {
-            // Annuler la recherche précédente si elle existe
-            searchTask?.cancel()
-            
-            guard !searchText.isEmpty else {
-                searchResults = []
-                isSearching = false
-                return
-            }
-            
-            isSearching = true
-            
-            searchTask = Task {
-                do {
-                    let results = try await PokemonService.shared.searchPokemon(query: searchText)
-                    await MainActor.run {
-                        self.searchResults = results
-                        self.isLoading = false
-                    }
-                } catch {
-                    await MainActor.run {
-                        self.errorMessage = IdentifiableError(message: error.localizedDescription)
-                        self.isLoading = false
-                    }
+        // Annuler la recherche précédente si elle existe
+        searchTask?.cancel()
+        
+        guard !searchText.isEmpty else {
+            searchResults = []
+            isSearching = false
+            return
+        }
+        
+        isSearching = true
+        
+        searchTask = Task {
+            do {
+                let results = try await PokemonService.shared.searchPokemon(query: searchText)
+                await MainActor.run {
+                    self.searchResults = results
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = IdentifiableError(message: error.localizedDescription)
+                    self.isLoading = false
                 }
             }
         }
+    }
     
     
 }
