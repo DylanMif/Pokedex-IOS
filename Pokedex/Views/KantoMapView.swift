@@ -9,50 +9,42 @@ import SwiftUI
 
 struct KantoMapView: View {
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme
     @State private var region: Region?
     @State private var locations: [Location] = []
     @State private var selectedLocation: Location?
-    @State private var showLocationDetail: Bool = false {
-        didSet {
-            if showLocationDetail && selectedLocation == nil {
-                showLocationDetail = false
-            }
-        }
-    }
+    @State private var showLocationDetail: Bool = false
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var imageSize: CGSize = .zero
     
-    
     var body: some View {
         VStack(spacing: 0) {
-            // En-tête avec titre
             VStack(spacing: 8) {
                 Text("RÉGION DE KANTO")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 
                 Text("Découvrez les Pokémon dans chaque lieu")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.8) : .black.opacity(0.8))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
                 LinearGradient(
-                    colors: [Color.red, Color.red.opacity(0.8)],
+                    colors: colorScheme == .dark ? [Color.black, Color.gray] : [Color.red, Color.red.opacity(0.8)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             
             ZStack {
-                // Fond avec l'image de la carte de Kanto
                 GeometryReader { geometry in
                     Image("KantoMap")
                         .resizable()
                         .scaledToFit()
-                        .background(Color(UIColor.systemBackground))
+                        .background(colorScheme == .dark ? Color.black : Color(UIColor.systemBackground))
                         .overlay(
                             GeometryReader { imageGeometry -> Color in
                                 DispatchQueue.main.async {
@@ -62,17 +54,14 @@ struct KantoMapView: View {
                             }
                         )
                     
-                    // Points cliquables pour chaque location
                     ForEach(locations) { location in
                         LocationButton(
                             location: location,
                             mapSize: imageSize,
                             viewSize: geometry.size
                         ) {
-                            // D'abord définir la location, puis ouvrir la sheet
                             selectedLocation = location
                             DispatchQueue.main.async {
-                                // Petit délai pour s'assurer que selectedLocation est bien défini
                                 showLocationDetail = true
                             }
                         }
@@ -140,21 +129,21 @@ struct KantoMapView: View {
     }
     
     private func loadKantoRegion() async {
-        isLoading = true
-        do {
-            let kantoRegion = try await PokemonService.shared.fetchKantoRegion()
-            locations = []  // Réinitialiser pour éviter les doublons
-            for locationResource in kantoRegion.locations {
-                if let location = try? await PokemonService.shared.fetchLocation(url: locationResource.url) {
-                    locations.append(location)
+            isLoading = true
+            do {
+                let kantoRegion = try await PokemonService.shared.fetchKantoRegion()
+                locations = []
+                for locationResource in kantoRegion.locations {
+                    if let location = try? await PokemonService.shared.fetchLocation(url: locationResource.url) {
+                        locations.append(location)
+                    }
                 }
+                self.region = kantoRegion
+            } catch {
+                errorMessage = "Impossible de charger la région de Kanto: \(error.localizedDescription)"
             }
-            self.region = kantoRegion
-        } catch {
-            errorMessage = "Impossible de charger la région de Kanto: \(error.localizedDescription)"
+            isLoading = false
         }
-        isLoading = false
-    }
 }
 
 struct LocationButton: View {
@@ -390,6 +379,9 @@ struct LocationDetailView: View {
     }
     
     private func pokemonCard(pokemonName: String, chances: [Int]) -> some View {
+        // Récupérer le colorScheme dans l’environnement si nécessaire
+        @Environment(\.colorScheme) var colorScheme
+
         return Group {
             if let details = pokemonDetails[pokemonName], let id = details.id {
                 NavigationLink(destination: PokemonDetailsView(pokemonId: id, namespace: namespace)) {
@@ -410,18 +402,24 @@ struct LocationDetailView: View {
                             .font(.caption)
                             .fontWeight(.medium)
                             .lineLimit(1)
+                            .foregroundColor(.primary)
                         
                         // Chances
                         Text(formatChances(chances))
                             .font(.caption2)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     }
                     .padding(8)
                     .frame(maxWidth: .infinity)
                     .frame(height: 110)
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
                     .cornerRadius(10)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                    .shadow(
+                        color: colorScheme == .dark
+                            ? Color.black.opacity(0.4)
+                            : Color.black.opacity(0.1),
+                        radius: 2, x: 0, y: 1
+                    )
                 }
             } else {
                 // Placeholder pendant le chargement
@@ -429,16 +427,23 @@ struct LocationDetailView: View {
                     ProgressView()
                     Text("Chargement...")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                 }
                 .padding(8)
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
-                .background(Color.white)
+                .background(Color(.systemBackground))
                 .cornerRadius(10)
+                .shadow(
+                    color: colorScheme == .dark
+                        ? Color.black.opacity(0.4)
+                        : Color.black.opacity(0.1),
+                    radius: 2, x: 0, y: 1
+                )
             }
         }
     }
+
     
     private func formatChances(_ chances: [Int]) -> String {
         // Trier et dédupliquer les chances
