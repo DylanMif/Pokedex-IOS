@@ -24,7 +24,7 @@ struct PokemonListView: View {
                 
                 VStack {
                     Text("Pokédex")
-                        .font(.custom("Pokemon Solid", size: 30)) // Police Pokémon
+                        .font(.custom("Pokemon Solid", size: 30))
                         .foregroundColor(.pokeYellow)
                         .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 2)
                         .padding(.top, 20)
@@ -68,6 +68,7 @@ struct PokemonListView: View {
             .onChange(of: sortOption) { }
             .navigationBarHidden(true)
         }
+        
     }
     
     private var searchBar: some View {
@@ -76,6 +77,7 @@ struct PokemonListView: View {
                 .foregroundColor(.gray)
             
             TextField("Rechercher un Pokémon", text: $viewModel.searchText)
+                .font(.custom("Pokemon Solid", size: 16))
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onChange(of: viewModel.searchText) {
                     viewModel.performSearch()
