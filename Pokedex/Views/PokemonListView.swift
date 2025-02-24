@@ -15,6 +15,8 @@ struct PokemonListView: View {
     @State private var selectedTypeFilter: String? = nil
     @State private var sortOption: SortOption = .name
     
+    @State private var zoomedPokemonId: Int? = nil
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -40,22 +42,97 @@ struct PokemonListView: View {
                         .foregroundColor(.white)
                         .padding(.top, 10)
                     
-                    // Picker for filter
-                    Picker("Filtre par Type", selection: $selectedTypeFilter) {
-                        Text("Tous").tag(nil as String?)
-                        Text("Eau").tag("Water" as String?)
-                        Text("Feu").tag("Fire" as String?)
-                        Text("Plante").tag("Grass" as String?)
-                        Text("Électrik").tag("Electric" as String?)
+                    // Dropdown for filter
+                    ZStack {
+                        // Background for the dropdown button
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(LinearGradient(gradient: Gradient(colors: [Color.pokeRed, Color.pokeRed.opacity(0.7)]),
+                                                 startPoint: .topLeading,
+                                                 endPoint: .bottomTrailing))
+                            .frame(height: 50)
+                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                        
+                        Menu {
+                            Button(action: { selectedTypeFilter = nil }) {
+                                Text("Tous")
+                            }
+                            Button(action: { selectedTypeFilter = "Normal" }) {
+                                Text("Normal")
+                            }
+                            Button(action: { selectedTypeFilter = "Water" }) {
+                                Text("Eau")
+                            }
+                            Button(action: { selectedTypeFilter = "Fire" }) {
+                                Text("Feu")
+                            }
+                            Button(action: { selectedTypeFilter = "Grass" }) {
+                                Text("Plante")
+                            }
+                            Button(action: { selectedTypeFilter = "Electric" }) {
+                                Text("Électrik")
+                            }
+                            Button(action: { selectedTypeFilter = "Ice" }) {
+                                Text("Glace")
+                            }
+                            Button(action: { selectedTypeFilter = "Fighting" }) {
+                                Text("Combat")
+                            }
+                            Button(action: { selectedTypeFilter = "Poison" }) {
+                                Text("Poison")
+                            }
+                            Button(action: { selectedTypeFilter = "Ground" }) {
+                                Text("Sol")
+                            }
+                            Button(action: { selectedTypeFilter = "Flying" }) {
+                                Text("Vol")
+                            }
+                            Button(action: { selectedTypeFilter = "Psychic" }) {
+                                Text("Psy")
+                            }
+                            Button(action: { selectedTypeFilter = "Bug" }) {
+                                Text("Insecte")
+                            }
+                            Button(action: { selectedTypeFilter = "Rock" }) {
+                                Text("Roche")
+                            }
+                            Button(action: { selectedTypeFilter = "Ghost" }) {
+                                Text("Spectre")
+                            }
+                            Button(action: { selectedTypeFilter = "Dragon" }) {
+                                Text("Dragon")
+                            }
+                            Button(action: { selectedTypeFilter = "Dark" }) {
+                                Text("Ténèbres")
+                            }
+                            Button(action: { selectedTypeFilter = "Steel" }) {
+                                Text("Acier")
+                            }
+                            Button(action: { selectedTypeFilter = "Fairy" }) {
+                                Text("Fée")
+                            }
+                            
+                        } label: {
+                            HStack {
+                                Text((translateType(type: selectedTypeFilter ?? "")))
+                                .font(.custom("Pokemon Solid", size: 16))
+                                .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.down")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 14, weight: .bold))
+                            }
+                            .padding(.horizontal, 40)
+                        }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    .background(Color.pokeRed.opacity(0.8))
-                    .cornerRadius(10)
+                    .frame(maxWidth: 200)
+                    .padding(.horizontal)
                     
                     Text("Trier pokémon par Nom ou ID")
                         .font(.custom("Pokemon Solid", size: 16))
                         .foregroundColor(.white)
+                        .padding(.top, 5)
                     
                     // Picker for sort
                     Picker("Tri par", selection: $sortOption) {
@@ -119,7 +196,16 @@ struct PokemonListView: View {
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                         .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id)", in: namespace)
+                        .scaleEffect(zoomedPokemonId == pokemon.id ? 1.2 : 1.0)
                     Text(pokemon.name.capitalized)
+                }
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        zoomedPokemonId = pokemon.id
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            zoomedPokemonId = nil
+                        }
+                    }
                 }
             }
             .transition(.slide)
@@ -137,7 +223,16 @@ struct PokemonListView: View {
                     AsyncImageView(url: pokemon.imageUrl)
                         .frame(width: 50, height: 50)
                         .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id)", in: namespace)
+                        .scaleEffect(zoomedPokemonId == pokemon.id ? 1.2 : 1.0)
                     Text(pokemon.name.capitalized)
+                }
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        zoomedPokemonId = pokemon.id // Trigger zoom
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            zoomedPokemonId = nil // Reset after a short delay
+                        }
+                    }
                 }
             }
             .transition(.slide)
@@ -176,16 +271,16 @@ struct PokemonListView: View {
         
         if let type = selectedTypeFilter {
             
-                print("Filtrage par type: \(type)")
+            print("Filtrage par type: \(type)")
             
-                filteredPokemons = filteredPokemons.filter { pokemon in
-                    let hasType = pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
-                    
-                    print("Pokemon: \(pokemon.name), Types: \(String(describing: pokemon.types)), Résultat: \(hasType)")
-                    
-                    return hasType
-                }
+            filteredPokemons = filteredPokemons.filter { pokemon in
+                let hasType = pokemon.types?.contains(where: { $0.type?.name?.lowercased() == type.lowercased() }) ?? false
+                
+                print("Pokemon: \(pokemon.name), Types: \(String(describing: pokemon.types)), Résultat: \(hasType)")
+                
+                return hasType
             }
+        }
         
         return applySorting(to: filteredPokemons)
     }
@@ -197,6 +292,30 @@ struct PokemonListView: View {
         case .id:
             return pokemons.sorted { $0.id < $1.id }
         }
+    }
+    
+    private func translateType(type: String) -> String {
+        switch type {
+            case "Normal": return "Normal"
+            case "Water": return "Eau"
+            case "Fire": return "Feu"
+            case "Grass": return "Plante"
+            case "Electric": return "Électrik"
+            case "Ice": return "Glace"
+            case "Fighting": return "Combat"
+            case "Poison": return "Poison"
+            case "Ground": return "Sol"
+            case "Flying": return "Vol"
+            case "Psychic": return "Psy"
+            case "Bug": return "Insecte"
+            case "Rock": return "Roche"
+            case "Ghost": return "Spectre"
+            case "Dragon": return "Dragon"
+            case "Dark": return "Ténèbres"
+            case "Steel": return "Acier"
+            case "Fairy": return "Fée"
+            default: return "Tous"
+            }
     }
     
 }
