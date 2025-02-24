@@ -17,7 +17,7 @@ struct ContentView: View {
     @State private var showSettings = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             PokemonListView()
                 .preferredColorScheme(getColorScheme())
                 .navigationBarItems(trailing: Button(action: { showSettings = true }) {

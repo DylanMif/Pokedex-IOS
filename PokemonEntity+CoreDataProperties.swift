@@ -19,6 +19,7 @@ extension PokemonEntity {
     @NSManaged public var id: Int64
     @NSManaged public var name: String?
     @NSManaged public var url: String?
+    @NSManaged public var isFavorite: NSNumber?
 
 }
 

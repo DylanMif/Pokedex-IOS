@@ -10,7 +10,8 @@ import SwiftUI
 
 class PokemonDetailsViewModel: ObservableObject {
     @Published var pokemon: PokemonDetail?
-    
+    @Published var opponent: PokemonDetail?
+
     @Published var pokemonForms: [PokemonForm] = []
     @Published var abilityDetails: [Int: Ability] = [:]
     @Published var moveDetails: [Int: MoveDetail] = [:]
@@ -20,23 +21,44 @@ class PokemonDetailsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: IdentifiableError?
         
-    func loadPokemonDetails(id: Int) {
+    func loadPokemonDetails(id: Int, isOpponent: Bool = false, completion: ((PokemonDetail?) -> Void)? = nil) {
         isLoading = true
-        PokemonService.shared.fetchPokemonDetails(id: id) { result in
-            DispatchQueue.main.async {
-                self.isLoading = false
-                switch result {
-                case .success(let pokemon):
-                    self.pokemon = pokemon
-                    self.loadFormDetails()
-                    self.loadAbilityDetails()
-                    self.loadMoveDetails()
-                    self.loadSpeciesDetails()
-                case .failure(let error):
-                    self.errorMessage = IdentifiableError(message: error.localizedDescription)
-                }
+        
+        // On charge d'abord l'état du favori
+        if !isOpponent { // Only load favorite state for the selected Pokémon
+            do {
+                isFavorite = try PokemonRepository().checkIsFavorite(pokemonId: id)
+            } catch {
+                print("Error loading favorite state: \(error)")
             }
         }
+        
+        // Puis on charge les détails du Pokémon comme avant
+        PokemonService.shared.fetchPokemonDetails(id: id) { result in
+                DispatchQueue.main.async {
+                self.isLoading = false
+                switch result {
+                case .success(let pokemonDetail):
+                    if isOpponent {
+                        self.opponent = pokemonDetail
+                    } else {
+                        self.pokemon = pokemonDetail
+                        self.loadFormDetails()
+                        self.loadAbilityDetails()
+                        self.loadMoveDetails()
+                        self.loadSpeciesDetails()
+                    }
+                    
+                    print("Pokemon details : \(pokemonDetail)" )
+                    
+                    completion?(pokemonDetail)
+                    
+                case .failure(let error):
+                    self.errorMessage = IdentifiableError(message: error.localizedDescription)
+                    completion?(nil)
+                }
+            }
+        }        
     }
     
     private func loadAbilityDetails() {
@@ -49,6 +71,8 @@ class PokemonDetailsViewModel: ObservableObject {
                     switch result {
                     case .success(let abilityDetail):
                         self.abilityDetails[id] = abilityDetail
+                        
+                        
                     case .failure(let error):
                         print("Error loading ability: \(error)")
                     }
@@ -114,8 +138,16 @@ class PokemonDetailsViewModel: ObservableObject {
     }
     
     func toggleFavorite() {
-        isFavorite.toggle()
-        // Here you would typically save to persistent storage
+        guard let pokemonId = pokemon?.id else { return }
+        
+        do {
+            isFavorite.toggle()
+            try PokemonRepository().toggleFavorite(for: pokemonId)
+        } catch {
+            print("Error saving favorite state: \(error)")
+            // En cas d'erreur, on revient à l'état précédent
+            isFavorite.toggle()
+        }
     }
 }
 

@@ -9,20 +9,118 @@ import SwiftUI
 
 struct PokemonDetailsView: View {
     @StateObject private var viewModel = PokemonDetailsViewModel()
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab = "Forms"
+    
     let pokemonId: Int
+    let namespace: Namespace.ID
+    
+    // Combat states
+    @State private var opponent: PokemonDetail?
+    @State private var battleResult: String?
+    @State private var isBattling = false
     
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
                 if let pokemon = viewModel.pokemon {
-                    PokemonHeaderView(
-                        pokemon: pokemon,
-                        isFavorite: viewModel.isFavorite,
-                        onFavoriteToggle: viewModel.toggleFavorite
+                    // Pokemon image et info
+                    VStack(spacing: 0) {
+                        // Pokemon image with bounce animation
+                        if let imageUrl = pokemon.sprites?.front_default,
+                           let url = URL(string: imageUrl) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 200, height: 200)
+                                        .modifier(PokemonBounceAnimation())
+                                        .offset(x: isBattling ? 20 : 0)
+                                case .failure(_):
+                                    Image(systemName: "photo")
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                            .padding(.top, 32)
+                        }
+                        
+                        // Pokemon info
+                        VStack(spacing: 8) {
+                            Text(pokemon.name?.capitalized ?? "")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(colorScheme == .dark ? .white : .black)
+                            
+                            Text(String(format: "#%03d", pokemon.id ?? 0))
+                                .font(.subheadline)
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.8) : .black.opacity(0.8))
+                        }
+                        .padding(.bottom, 16)
+                        .frame(maxWidth: .infinity)
+                        // Types
+                        HStack(spacing: 12) {
+                            ForEach(pokemon.types ?? [], id: \.slot) { type in
+                                TypeBadge(type: type.type?.name ?? "Unknown")
+                            }
+                        }
+                        .padding(.vertical, 16)
+                    }
+                    .background(
+                        LinearGradient(
+                            colors: getTypeColors(for: pokemon).map { $0.opacity(colorScheme == .dark ? 0.6 : 1.0) },
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
                     
-                    // Tab selector
+                    // Opponents ( while combatting )
+                    if let opponent = opponent, isBattling {
+                        VStack(spacing: 16) {
+                            Text("VS")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.red)
+                            
+                            if let imageUrl = opponent.sprites?.front_default,
+                               let url = URL(string: imageUrl) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 150, height: 150)
+                                            .offset(x: isBattling ? -20 : 0) // Animation
+                                    case .empty:
+                                        ProgressView()
+                                    case .failure(_):
+                                        Image(systemName: "photo")
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                            }
+                            
+                            Text(opponent.name?.capitalized ?? "Unknown")
+                                .font(.headline)
+                            
+                            HStack(spacing: 8) {
+                                ForEach(opponent.types ?? [], id: \.slot) { type in
+                                    TypeBadge(type: type.type?.name ?? "Unknown")
+                                }
+                            }
+                        }
+                        .transition(.opacity)
+                        .padding(.vertical)
+                    }
+                    
+                    // Tabs selector
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 24) {
                             ForEach(["Forms", "Detail", "Types", "Stats"], id: \.self) { tab in
@@ -35,7 +133,7 @@ struct PokemonDetailsView: View {
                     }
                     .padding(.vertical, 8)
                     
-                    // Content based on selected tab
+                    // Tabs
                     switch selectedTab {
                     case "Forms":
                         FormsTabView(pokemon: pokemon, forms: viewModel.pokemonForms)
@@ -48,121 +146,150 @@ struct PokemonDetailsView: View {
                     default:
                         EmptyView()
                     }
+                    
+                    // Combat button
+                    Button(action: {
+                        if !isBattling {
+                            startBattle(pokemon: pokemon)
+                        }
+                    }) {
+                        Text(isBattling ? "Combat en cours..." : "Lancer un combat")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(isBattling ? Color.gray : Color.blue)
+                            .cornerRadius(10)
+                    }
+                    .disabled(isBattling)
+                    .padding(.top, 16)
+                    
+                    // Battle result
+                    if let result = battleResult {
+                        Text(result)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .padding()
+                            .transition(.opacity)
+                    }
                 }
             }
         }
-        .navigationBarHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.primary)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: { viewModel.toggleFavorite() }) {
+                    Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
+                        .foregroundColor(viewModel.isFavorite ? .red : .primary)
+                }
+            }
+        }
+        
+        .navigationBarBackButtonHidden(true)
         .edgesIgnoringSafeArea(.top)
         .onAppear {
             viewModel.loadPokemonDetails(id: pokemonId)
         }
     }
-}
-
-struct PokemonHeaderView: View {
-    let pokemon: PokemonDetail
-    let isFavorite: Bool
-    let onFavoriteToggle: () -> Void
-    @Environment(\.dismiss) private var dismiss
     
-    var body: some View {
-        VStack(spacing: 0) {
-            // Navigation and favorite buttons
-            HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
-                        .padding(12)
-                        .background(Color.white.opacity(0.8))
-                        .clipShape(Circle())
+    // Combat logic
+    private func startBattle(pokemon: PokemonDetail) {
+        guard let playerStats = pokemon.stats else { return }
+        isBattling = true
+        battleResult = nil
+        opponent = nil
+
+        let opponentId = Int.random(in: 1...151)
+        viewModel.loadPokemonDetails(id: opponentId, isOpponent: true) { opponentPokemon in
+            guard let opponentPokemon = opponentPokemon,
+                  let opponentStats = opponentPokemon.stats else {
+                DispatchQueue.main.async {
+                    self.isBattling = false
+                    self.battleResult = "Erreur : Impossible de charger l'adversaire."
                 }
-                
-                Spacer()
-                
-                Button(action: onFavoriteToggle) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .black)
-                        .padding(12)
-                        .background(Color.white.opacity(0.8))
-                        .clipShape(Circle())
-                }
+                return
             }
-            .padding()
-            
-            // Pokemon info
-            VStack(spacing: 8) {
-                Text(pokemon.name?.capitalized ?? "")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                Text(String(format: "#%03d", pokemon.id ?? ""))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+
+            withAnimation(.easeInOut(duration: 0.5).repeatCount(3, autoreverses: true)) {
+                self.opponent = opponentPokemon
             }
-            .padding(.bottom, 16)
-            
-            // Pokemon image
-            if let imageUrl = pokemon.sprites?.front_default,
-               let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView() // Loading indicator
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    case .failure(_):
-                        Image(systemName: "photo") // Fallback image
-                    @unknown default:
-                        EmptyView()
+
+            let playerAttack = playerStats.first { $0.stat?.name == "attack" }?.base_stat ?? 0
+            let playerDefense = playerStats.first { $0.stat?.name == "defense" }?.base_stat ?? 0
+            let playerSpeed = playerStats.first { $0.stat?.name == "speed" }?.base_stat ?? 0
+            let opponentAttack = opponentStats.first { $0.stat?.name == "attack" }?.base_stat ?? 0
+            let opponentDefense = opponentStats.first { $0.stat?.name == "defense" }?.base_stat ?? 0
+            let opponentSpeed = opponentStats.first { $0.stat?.name == "speed" }?.base_stat ?? 0
+
+            let playerScore = Double(playerAttack) * 0.5 + Double(playerDefense) * 0.3 + Double(playerSpeed) * 0.2 + Double.random(in: 0...20)
+            let opponentScore = Double(opponentAttack) * 0.5 + Double(opponentDefense) * 0.3 + Double(opponentSpeed) * 0.2 + Double.random(in: 0...20)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation {
+                    if playerScore > opponentScore {
+                        self.battleResult = "\(pokemon.name?.capitalized ?? "Votre Pokémon") a vaincu \(opponentPokemon.name?.capitalized ?? "l'adversaire") !"
+                    } else if playerScore < opponentScore {
+                        self.battleResult = "\(opponentPokemon.name?.capitalized ?? "L'adversaire") a vaincu \(pokemon.name?.capitalized ?? "votre Pokémon") !"
+                    } else {
+                        self.battleResult = "Égalité entre \(pokemon.name?.capitalized ?? "votre Pokémon") et \(opponentPokemon.name?.capitalized ?? "l'adversaire") !"
                     }
+                    self.isBattling = false
                 }
             }
-            
-            // Types
-            HStack(spacing: 12) {
-                ForEach(pokemon.types ?? [], id: \.slot) { type in
-                    TypeBadge(type: type.type?.name ?? "Unknown")
-                }
-            }
-            .padding(.vertical, 16)
         }
-        .background(
-            LinearGradient(
-                colors: getTypeColors(),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
     }
     
-    private func getTypeColors() -> [Color] {
+    private func getTypeColors(for pokemon: PokemonDetail) -> [Color] {
         guard let types = pokemon.types else {
-            return [Color(hex: 0x919AA2)] // Retourne une couleur par défaut si pas de types
+            return [Color(hex: 0x919AA2)]
         }
         
         let colors = types.prefix(2).map { type in
             PokemonTypeColor.getColor(for: type.type?.name ?? "")
         }
         
-        // Si un seul type, retourne la même couleur avec une opacité différente
         return colors.count == 1 ? [colors[0], colors[0].opacity(0.7)] : colors
     }
 }
 
+
+// Pokemon bounce animation modifier
+struct PokemonBounceAnimation: ViewModifier {
+    @State private var isAnimating = false
+    
+    func body(content: Content) -> some View {
+        content
+            .offset(y: isAnimating ? -20 : 0)
+            .animation(
+                Animation
+                    .easeInOut(duration: 1.5)
+                    .repeatForever(autoreverses: true),
+                value: isAnimating
+            )
+            .onAppear {
+                isAnimating = true
+            }
+    }
+}
+
+
 struct TypeBadge: View {
     let type: String
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Text(type.capitalized)
             .font(.subheadline)
             .fontWeight(.medium)
-            .foregroundColor(.white)
+            .foregroundColor(colorScheme == .dark ? .white : .black)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Color.white.opacity(0.2))
+            .background(Color.white.opacity(colorScheme == .dark ? 0.1 : 0.2))
             .cornerRadius(20)
     }
 }
@@ -446,6 +573,8 @@ struct StatRowView: View {
     }
 }
 
-#Preview {
-    PokemonDetailsView(pokemonId: 666)
-}
+//#Preview {
+//    PokemonDetailsView(
+//        pokemonId: 666,
+//    )
+//}
