@@ -13,6 +13,7 @@ struct PokemonDetailsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab = "Forms"
     let pokemonId: Int
+    let namespace: Namespace.ID
     
     var body: some View {
         ScrollView {
@@ -451,6 +452,8 @@ struct StatRowView: View {
     }
 }
 
-#Preview {
-    PokemonDetailsView(pokemonId: 666)
-}
+//#Preview {
+//    PokemonDetailsView(
+//        pokemonId: 666,
+//    )
+//}
