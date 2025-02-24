@@ -34,7 +34,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         dateComponents.minute = 0
         
         // Créer le trigger
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         
         // Créer la requête
         let request = UNNotificationRequest(
