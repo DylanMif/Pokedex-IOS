@@ -9,6 +9,8 @@ import SwiftUI
 
 struct PokemonDetailsView: View {
     @StateObject private var viewModel = PokemonDetailsViewModel()
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab = "Forms"
     let pokemonId: Int
     let namespace: Namespace.ID
@@ -17,11 +19,57 @@ struct PokemonDetailsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 if let pokemon = viewModel.pokemon {
-                    PokemonHeaderView(
-                        pokemon: pokemon,
-                        isFavorite: viewModel.isFavorite,
-                        onFavoriteToggle: viewModel.toggleFavorite,
-                        namespace: namespace
+                    // Pokemon image et info
+                    VStack(spacing: 0) {
+                        // Pokemon image with bounce animation
+                        if let imageUrl = pokemon.sprites?.front_default,
+                           let url = URL(string: imageUrl) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 200, height: 200)
+                                        .modifier(PokemonBounceAnimation())
+                                case .failure(_):
+                                    Image(systemName: "photo")
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                            .padding(.top, 32)
+                        }
+                        
+                        // Pokemon info
+                        VStack(spacing: 8) {
+                            Text(pokemon.name?.capitalized ?? "")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(colorScheme == .dark ? .white : .black)
+                            
+                            Text(String(format: "#%03d", pokemon.id ?? 0))
+                                .font(.subheadline)
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.8) : .black.opacity(0.8))
+                        }
+                        .padding(.bottom, 16)
+                        .frame(maxWidth: .infinity)
+                        // Types
+                        HStack(spacing: 12) {
+                            ForEach(pokemon.types ?? [], id: \.slot) { type in
+                                TypeBadge(type: type.type?.name ?? "Unknown")
+                            }
+                        }
+                        .padding(.vertical, 16)
+                    }
+                    .background(
+                        LinearGradient(
+                            colors: getTypeColors(for: pokemon).map { $0.opacity(colorScheme == .dark ? 0.6 : 1.0) },
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
                     
                     // Tab selector
@@ -53,120 +101,74 @@ struct PokemonDetailsView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
-        .edgesIgnoringSafeArea(.top)
-        .onAppear {
-            viewModel.loadPokemonDetails(id: pokemonId)
-        }
-    }
-}
-
-struct PokemonHeaderView: View {
-    let pokemon: PokemonDetail
-    let isFavorite: Bool
-    let onFavoriteToggle: () -> Void
-    let namespace: Namespace.ID
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Navigation and favorite buttons
-            HStack {
-                Button(action: { dismiss() }) {
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { presentationMode.wrappedValue.dismiss() }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
-                        .padding(12)
-                        .background(Color.white.opacity(0.8))
-                        .clipShape(Circle())
-                }
-                
-                Spacer()
-                
-                Button(action: onFavoriteToggle) {
-                    Image(systemName: isFavorite ? "heart.fill" : "heart")
-                        .foregroundColor(isFavorite ? .red : .black)
-                        .padding(12)
-                        .background(Color.white.opacity(0.8))
-                        .clipShape(Circle())
+                        .foregroundColor(.primary)
                 }
             }
-            .padding()
-            
-            // Pokemon info
-            VStack(spacing: 8) {
-                Text(pokemon.name?.capitalized ?? "")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                Text(String(format: "#%03d", pokemon.id ?? ""))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .padding(.bottom, 16)
-            
-            // Pokemon image
-            if let imageUrl = pokemon.sprites?.front_default,
-               let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView() // Loading indicator
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .matchedGeometryEffect(id: "pokemonImage-\(pokemon.id ?? 0)", in: namespace)
-                    case .failure(_):
-                        Image(systemName: "photo") // Fallback image
-                    @unknown default:
-                        EmptyView()
-                    }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: { viewModel.toggleFavorite() }) {
+                    Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
+                        .foregroundColor(viewModel.isFavorite ? .red : .primary)
                 }
             }
-            
-            // Types
-            HStack(spacing: 12) {
-                ForEach(pokemon.types ?? [], id: \.slot) { type in
-                    TypeBadge(type: type.type?.name ?? "Unknown")
-                }
-            }
-            .padding(.vertical, 16)
         }
-        .background(
-            LinearGradient(
-                colors: getTypeColors(),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        
+                .navigationBarBackButtonHidden(true)
+                .edgesIgnoringSafeArea(.top)
+                .onAppear {
+                    viewModel.loadPokemonDetails(id: pokemonId)
+                }
     }
     
-    private func getTypeColors() -> [Color] {
+    private func getTypeColors(for pokemon: PokemonDetail) -> [Color] {
         guard let types = pokemon.types else {
-            return [Color(hex: 0x919AA2)] // Retourne une couleur par défaut si pas de types
+            return [Color(hex: 0x919AA2)]
         }
         
         let colors = types.prefix(2).map { type in
             PokemonTypeColor.getColor(for: type.type?.name ?? "")
         }
         
-        // Si un seul type, retourne la même couleur avec une opacité différente
         return colors.count == 1 ? [colors[0], colors[0].opacity(0.7)] : colors
     }
 }
+    
+    
+// Pokemon bounce animation modifier
+struct PokemonBounceAnimation: ViewModifier {
+    @State private var isAnimating = false
+    
+    func body(content: Content) -> some View {
+        content
+            .offset(y: isAnimating ? -20 : 0)
+            .animation(
+                Animation
+                    .easeInOut(duration: 1.5)
+                    .repeatForever(autoreverses: true),
+                value: isAnimating
+            )
+            .onAppear {
+                isAnimating = true
+            }
+    }
+}
+
 
 struct TypeBadge: View {
     let type: String
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Text(type.capitalized)
             .font(.subheadline)
             .fontWeight(.medium)
-            .foregroundColor(.white)
+            .foregroundColor(colorScheme == .dark ? .white : .black)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Color.white.opacity(0.2))
+            .background(Color.white.opacity(colorScheme == .dark ? 0.1 : 0.2))
             .cornerRadius(20)
     }
 }
