@@ -4,7 +4,7 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Resources/Fonts/pokemonsolid.ttf</string>
+		<string>Resources/Fonts/pokemon_solid.ttf</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
