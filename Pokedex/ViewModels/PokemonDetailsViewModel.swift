@@ -22,6 +22,15 @@ class PokemonDetailsViewModel: ObservableObject {
         
     func loadPokemonDetails(id: Int) {
         isLoading = true
+        
+        // On charge d'abord l'état du favori
+        do {
+            isFavorite = try PokemonRepository().checkIsFavorite(pokemonId: id)
+        } catch {
+            print("Error loading favorite state: \(error)")
+        }
+        
+        // Puis on charge les détails du Pokémon comme avant
         PokemonService.shared.fetchPokemonDetails(id: id) { result in
             DispatchQueue.main.async {
                 self.isLoading = false
@@ -32,11 +41,13 @@ class PokemonDetailsViewModel: ObservableObject {
                     self.loadAbilityDetails()
                     self.loadMoveDetails()
                     self.loadSpeciesDetails()
+                    
+                    print("Pokemon details : \(pokemon)" )
                 case .failure(let error):
                     self.errorMessage = IdentifiableError(message: error.localizedDescription)
                 }
             }
-        }
+        }        
     }
     
     private func loadAbilityDetails() {
@@ -49,6 +60,8 @@ class PokemonDetailsViewModel: ObservableObject {
                     switch result {
                     case .success(let abilityDetail):
                         self.abilityDetails[id] = abilityDetail
+                        
+                        
                     case .failure(let error):
                         print("Error loading ability: \(error)")
                     }
@@ -114,9 +127,16 @@ class PokemonDetailsViewModel: ObservableObject {
     }
     
     func toggleFavorite() {
-        isFavorite.toggle()
+        guard let pokemonId = pokemon?.id else { return }
         
-        // Here you would typically save to persistent storage
+        do {
+            isFavorite.toggle()
+            try PokemonRepository().toggleFavorite(for: pokemonId)
+        } catch {
+            print("Error saving favorite state: \(error)")
+            // En cas d'erreur, on revient à l'état précédent
+            isFavorite.toggle()
+        }
     }
 }
 
