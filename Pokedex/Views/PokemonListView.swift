@@ -77,7 +77,6 @@ struct PokemonListView: View {
                 .foregroundColor(.gray)
             
             TextField("Rechercher un Pokémon", text: $viewModel.searchText)
-                .font(.custom("Pokemon Solid", size: 16))
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onChange(of: viewModel.searchText) {
                     viewModel.performSearch()
