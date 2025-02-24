@@ -113,29 +113,7 @@ struct PokemonListView: View {
                             
                         } label: {
                             HStack {
-                                Text({
-                                    switch selectedTypeFilter {
-                                    case "Normal": return "Normal"
-                                    case "Water": return "Eau"
-                                    case "Fire": return "Feu"
-                                    case "Grass": return "Plante"
-                                    case "Electric": return "Électrik"
-                                    case "Ice": return "Glace"
-                                    case "Fighting": return "Combat"
-                                    case "Poison": return "Poison"
-                                    case "Ground": return "Sol"
-                                    case "Flying": return "Vol"
-                                    case "Psychic": return "Psy"
-                                    case "Bug": return "Insecte"
-                                    case "Rock": return "Roche"
-                                    case "Ghost": return "Spectre"
-                                    case "Dragon": return "Dragon"
-                                    case "Dark": return "Ténèbres"
-                                    case "Steel": return "Acier"
-                                    case "Fairy": return "Fée"
-                                    default: return "Tous"
-                                    }
-                                }())
+                                Text((translateType(type: selectedTypeFilter ?? "")))
                                 .font(.custom("Pokemon Solid", size: 16))
                                 .foregroundColor(.white)
                                 
@@ -314,6 +292,30 @@ struct PokemonListView: View {
         case .id:
             return pokemons.sorted { $0.id < $1.id }
         }
+    }
+    
+    private func translateType(type: String) -> String {
+        switch type {
+            case "Normal": return "Normal"
+            case "Water": return "Eau"
+            case "Fire": return "Feu"
+            case "Grass": return "Plante"
+            case "Electric": return "Électrik"
+            case "Ice": return "Glace"
+            case "Fighting": return "Combat"
+            case "Poison": return "Poison"
+            case "Ground": return "Sol"
+            case "Flying": return "Vol"
+            case "Psychic": return "Psy"
+            case "Bug": return "Insecte"
+            case "Rock": return "Roche"
+            case "Ghost": return "Spectre"
+            case "Dragon": return "Dragon"
+            case "Dark": return "Ténèbres"
+            case "Steel": return "Acier"
+            case "Fairy": return "Fée"
+            default: return "Tous"
+            }
     }
     
 }

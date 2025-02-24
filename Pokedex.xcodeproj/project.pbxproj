@@ -126,6 +126,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		A88450CA2D6CADE60010FE8A /* Manager */ = {
+			isa = PBXGroup;
+			children = (
+				A88450CB2D6CADF50010FE8A /* NotificationManager.swift */,
+			);
+			path = Manager;
+			sourceTree = "<group>";
+		};
 		A8BC32692D63206500F68F5B = {
 			isa = PBXGroup;
 			children = (
@@ -147,6 +155,7 @@
 		A8BC32742D63206500F68F5B /* Pokedex */ = {
 			isa = PBXGroup;
 			children = (
+				A88450CA2D6CADE60010FE8A /* Manager */,
 				620392AB2D6BF30B009DCC83 /* Resources */,
 				620392A92D6BF207009DCC83 /* Theme.swift */,
 				6215A4172D633D6F00292CA4 /* Repositories */,
@@ -264,6 +273,7 @@
 				6215A41E2D633FD100292CA4 /* PokemonEntity+CoreDataClass.swift in Sources */,
 				6215A41F2D633FD100292CA4 /* PokemonEntity+CoreDataProperties.swift in Sources */,
 				6215A41B2D633DBA00292CA4 /* PokemonRepository.swift in Sources */,
+				A88450CC2D6CADF50010FE8A /* NotificationManager.swift in Sources */,
 				A8BC32762D63206500F68F5B /* PokedexApp.swift in Sources */,
 				298214492D6335240078DAD7 /* PokemonListViewModel.swift in Sources */,
 				298214452D63351C0078DAD7 /* PokemonDetailsView.swift in Sources */,
