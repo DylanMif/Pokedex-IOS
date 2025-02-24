@@ -52,14 +52,18 @@ open PokedexSwiftUI.xcodeproj
   - Filtrage et tri avancé
   - Ajout d'animations et intéractions avancées
   - Ajout thème sombre et claire
+  - Design
 - MIFTARI Dylan :
   - Liste des pokémons et chargement dynamique via l'API
   - Notification quotidienne
   - Jeu Guess the types
+  - Design
 - TREHOU Nicolas :
   - Cartes intéractive
   - Page de détail des Pokémons
   - Récupération des données via l'API
+  - Animations
+  - Design
 
 Licence
 
