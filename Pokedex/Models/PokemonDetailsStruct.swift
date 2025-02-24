@@ -112,15 +112,22 @@ struct LocationAreaEncounter: Codable{
 struct VersionEncounterDetail: Codable{
     let version: NamedAPIResource?
     let max_chance: Int?
-    let encounter_details: Encounter?
+    let encounter_details: [Encounter]?
 }
 
 struct Encounter: Codable{
     let min_level: Int?
     let max_level: Int?
-    let condition_values: NamedAPIResource?
+    let condition_values: [NamedAPIResource]?
     let chance: Int?
     let method: NamedAPIResource?
+}
+
+struct EncounterMethod: Codable{
+    let id: Int
+    let name: Name
+    let order: Int
+    let names: [Name?]
 }
 
 struct PokemonColor: Codable{

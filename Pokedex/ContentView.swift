@@ -19,6 +19,7 @@ struct ContentView: View {
     
     @State private var selectedTheme: Theme = .system
     @State private var showSettings = false
+    @State private var showMap = false
     
     @State private var navigateToPokemonId: Int = 0
     
@@ -27,10 +28,29 @@ struct ContentView: View {
             if(navigateToPokemonId == 0) {
                 PokemonListView()
                     .preferredColorScheme(getColorScheme())
-                    .navigationBarItems(trailing: Button(action: { showSettings = true }) {
-                        Image(systemName: "gear")
-                            .foregroundColor(.black)
-                    })
+                    .navigationBarItems(
+                        leading: NavigationLink {
+                            KantoMapView()
+                        } label: {
+                            HStack {
+                                Image(systemName: "map.fill")
+                                Text("Carte")
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.blue.opacity(0.7))
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
+                        },
+                        trailing: Button(action: { showSettings = true }) {
+                            Image(systemName: "gear")
+                                .foregroundColor(.black)
+                        }
+                    )
                     .navigationDestination(for: Int.self) { pokemonId in
                         PokemonDetailsView(pokemonId: pokemonId, namespace: namespace)
                     }

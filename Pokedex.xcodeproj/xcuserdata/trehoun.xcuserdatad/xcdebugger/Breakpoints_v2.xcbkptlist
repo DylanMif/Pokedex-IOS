@@ -30,8 +30,8 @@
             filePath = "Pokedex/Models/PokemonDetailsStruct.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "304"
-            endingLineNumber = "304"
+            startingLineNumber = "311"
+            endingLineNumber = "311"
             landmarkName = "init(hex:opacity:)"
             landmarkType = "7">
          </BreakpointContent>
