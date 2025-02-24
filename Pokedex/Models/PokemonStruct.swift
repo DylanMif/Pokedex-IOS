@@ -20,6 +20,7 @@ struct Pokemon: Identifiable, Decodable {
     var imageUrl: String {
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png"
         }
+    var types: [PokemonType]?
 }
 
 struct PokemonListResponse: Decodable {
