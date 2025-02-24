@@ -16,6 +16,7 @@ struct PokemonListView: View {
     @State private var sortOption: SortOption = .name
     
     @State private var zoomedPokemonId: Int? = nil
+    @State private var showGameView = false
     
     var body: some View {
         NavigationView {
@@ -145,6 +146,17 @@ struct PokemonListView: View {
                     .cornerRadius(10)
                     
                     searchBar
+                    
+                    Button("Lancer le Mini-jeu") {
+                                            showGameView.toggle()
+                                        }
+                                        .padding()
+                                        .background(Color.pokeRed)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(8)
+                                        .sheet(isPresented: $showGameView) {
+                                            PokemonGameView()
+                                        }
                     
                     if viewModel.isSearching {
                         searchResultsList
