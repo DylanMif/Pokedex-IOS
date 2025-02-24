@@ -115,6 +115,7 @@ class PokemonDetailsViewModel: ObservableObject {
     
     func toggleFavorite() {
         isFavorite.toggle()
+        
         // Here you would typically save to persistent storage
     }
 }
