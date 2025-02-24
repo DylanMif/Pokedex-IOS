@@ -50,6 +50,66 @@ class PokemonService {
         }.resume()
     }
 
+    func fetchKantoRegion() async throws -> Region {
+        guard let url = URL(string: "\(baseUrl)/region/1") else {
+            throw URLError(.badURL)
+        }
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode(Region.self, from: data)
+    }
+    
+    func fetchLocation(url: String) async throws -> Location {
+        guard let url = URL(string: url) else {
+            throw URLError(.badURL)
+        }
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode(Location.self, from: data)
+    }
+    
+    func fetchMethod(url: String) async throws -> EncounterMethod {
+        guard let url = URL(string: url) else {
+            throw URLError(.badURL)
+        }
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode(EncounterMethod.self, from: data)
+    }
+    
+    func fetchLocationArea(url: String) async throws -> LocationArea {
+        guard let url = URL(string: url) else {
+            throw URLError(.badURL)
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        // Debugger la réponse
+        if let httpResponse = response as? HTTPURLResponse {
+            print("Status code: \(httpResponse.statusCode)")
+        }
+        
+        // Voir les données reçues
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("JSON reçu: \(jsonString)")
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(LocationArea.self, from: data)
+        } catch {
+            print("Erreur de décodage: \(error)")
+            throw error
+        }
+    }
+
+    func fetchPokemonFromUrl(url: String) async throws -> PokemonDetail {
+        guard let url = URL(string: url) else {
+            throw URLError(.badURL)
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try JSONDecoder().decode(PokemonDetail.self, from: data)
+    }
+    
+    
     func fetchPokemonList(offset: Int, limit: Int = 20, completion: @escaping (Result<PokemonListResponse, Error>) -> Void) {
         guard let url = URL(string: "\(baseUrl)/pokemon?offset=\(offset)&limit=\(limit)") else { return }
         
